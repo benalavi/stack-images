@@ -10,9 +10,12 @@ export DEBIAN_FRONTEND=noninteractive
 
 # The default sources list minus backports, restricted and multiverse.
 cat >/etc/apt/sources.list <<EOF
-deb http://archive.ubuntu.com/ubuntu/ focal main universe
-deb http://archive.ubuntu.com/ubuntu/ focal-security main universe
-deb http://archive.ubuntu.com/ubuntu/ focal-updates main universe
+deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ focal main universe
+deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ focal-security main universe
+deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ focal-updates main universe
+deb [arch=arm64] http://ports.ubuntu.com/ focal main universe
+deb [arch=arm64] http://ports.ubuntu.com/ focal-security main universe
+deb [arch=arm64] http://ports.ubuntu.com/ focal-updates main universe
 EOF
 
 apt-get update
@@ -209,6 +212,7 @@ apt-get install -y --no-install-recommends \
     locales \
     lsb-release \
     make \
+    mtools \
     netcat-openbsd \
     openssh-client \
     openssh-server \
@@ -223,7 +227,7 @@ apt-get install -y --no-install-recommends \
     shared-mime-info \
     socat \
     stunnel \
-    syslinux \
+    syslinux-common \
     tar \
     telnet \
     tzdata \
@@ -234,6 +238,8 @@ apt-get install -y --no-install-recommends \
     zlib1g \
     zstd \
 
+# Install syslinux for amd64 only
+if [ "$TARGETARCH" == "amd64" ]; then apt-get install -y --no-install-recommends syslinux; fi
 
 cat > /etc/ImageMagick-6/policy.xml <<'IMAGEMAGICK_POLICY'
 <policymap>

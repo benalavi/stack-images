@@ -3,8 +3,6 @@
 set -euo pipefail
 set -x
 
-bin/build.sh "${STACK_VERSION}"
-
 (
   # Disable tracing (until the end of this subshell) to prevent logging registry tokens.
   set +x
@@ -18,14 +16,19 @@ bin/build.sh "${STACK_VERSION}"
     | docker login "$INTERNAL_REGISTRY_HOST" -u "$INTERNAL_REGISTRY_USERNAME" --password-stdin
 )
 
+bin/build.sh "${STACK_VERSION}"
+
 push_group() {
     local targetTagBase="$1"
     local targetTagSuffix="$2"
     for variant in "" "-build" "-cnb" "-cnb-build"; do
       source="${publicTag}${variant}"
       target="${targetTagBase}${variant}${targetTagSuffix}"
-      docker tag "${source}" "${target}"
-      docker push "${target}"
+      chmod +r "$HOME"/.docker/config.json
+      docker container run --rm --net host \
+        -v regctl-conf:/home/appuser/.regctl/ \
+        -v "$HOME"/.docker/config.json:/home/appuser/.docker/config.json \
+        regclient/regctl image copy "${source}" "${target}"
     done
 }
 
